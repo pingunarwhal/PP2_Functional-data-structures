@@ -434,7 +434,8 @@ instance (Show p, Show k) => Show (BinomialHeap p k) where
 -}
 instance Functor (BinomialTree p) where
     -- fmap :: (k1 -> k2) -> BinomialTree p k1 -> BinomialTree p k2
-    fmap f tree = undefined
+    fmap f EmptyTree = EmptyTree
+    fmap f tree@(Node p k chs) = Node p (f k) [fmap f child | child <- chs]
 
 {-
     *** TODO ***
@@ -457,7 +458,7 @@ instance Functor (BinomialTree p) where
 -}
 instance Functor (BinomialHeap p) where
     -- fmap :: (k1 -> k2) -> BinomialHeap p k1 -> BinomialHeap p k2
-    fmap f heap = undefined
+    fmap f heap@(BinomialHeap s ts) = BinomialHeap s [fmap f t | t <- ts]
 
 {-
     *** TODO BONUS ***
@@ -507,4 +508,7 @@ instance Functor (BinomialHeap p) where
 -}
 instance Foldable (BinomialTree p) where
     -- foldr :: (k -> b -> b) -> b -> BinomialTree p k -> b
-    foldr f acc tree = undefined
+    foldr _ acc EmptyTree = acc
+    foldr f acc (Node p k chs) = f k $ composed acc
+        where partials = [\acc' -> foldr f acc' ch | ch <- chs]
+              composed = foldr (.) id partials
